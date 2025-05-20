@@ -349,7 +349,7 @@ end
 ---@private
 function M.render_chunk(scope, state)
   local indent = (scope.indent or 2)
-  local col = indent - state.leftcol - state.shiftwidth
+  local col = indent - state.leftcol - 2
   if col < 0 then -- scope is hidden
     return
   end
