@@ -11,7 +11,13 @@ end
 _G.bt = function()
   Snacks.debug.backtrace()
 end
-vim.print = _G.dd
+if vim.fn.has("nvim-0.11") == 1 then
+  vim._print = function(_, ...)
+    dd(...)
+  end
+else
+  vim.print = dd
+end
 ```
 
 What this does:
@@ -32,7 +38,7 @@ What this does:
 ```lua
 ---@class snacks.debug.cmd
 ---@field cmd string|string[]
----@field level? snacks.notifier.level
+---@field level? snacks.notifier.level|vim.log.levels
 ---@field title? string
 ---@field args? string[]
 ---@field cwd? string
@@ -40,7 +46,7 @@ What this does:
 ---@field notify? boolean
 ---@field footer? string
 ---@field header? string
----@field props? table<string, string>
+---@field props? table<string, string|boolean|number|nil>
 ```
 
 ```lua

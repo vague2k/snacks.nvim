@@ -26,7 +26,7 @@
 local uv = vim.uv or vim.loop
 
 local function norm(path)
-  return svim.fs.normalize(path)
+  return svim.fs.normalize(path):gsub("/$", ""):gsub("^$", "/")
 end
 
 local function assert_dir(path)
@@ -141,6 +141,7 @@ function Tree:expand(node)
     if not name then
       break
     end
+    t = t or Snacks.util.path_type(node.path .. "/" .. name)
     found[name] = true
     local child = self:child(node, name, t)
     child.type = t

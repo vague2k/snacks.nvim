@@ -125,14 +125,16 @@ function M.parse(lines)
         used_comments[node:start()] = true
       end
 
-      table.insert(ret.captures, {
-        text = vim.treesitter.get_node_text(node, source),
-        name = name,
-        comment = comment,
-        line = node:start() + 1,
-        node = node,
-        fields = fields,
-      })
+      if not comment:find("@deprecated") then
+        table.insert(ret.captures, {
+          text = vim.treesitter.get_node_text(node, source),
+          name = name,
+          comment = comment,
+          line = node:start() + 1,
+          node = node,
+          fields = fields,
+        })
+      end
     end
   end
   for l in pairs(used_comments) do
@@ -509,8 +511,19 @@ function M._build()
       local info = M.extract(lines, { prefix = "Snacks", name = name })
 
       local children = {} ---@type snacks.docs.Info[]
+      local to_merge = {} ---@type {child:string, name:string}[]
+
       for c, child in pairs(plugin.meta.merge or {}) do
         local child_name = type(c) == "number" and child or c --[[@as string]]
+        table.insert(to_merge, { child = child, name = child_name })
+      end
+      table.sort(to_merge, function(a, b)
+        return a.child < b.child
+      end)
+
+      for _, item in ipairs(to_merge) do
+        local child = item.child
+        local child_name = item.name
         local child_file = ("%s/%s/%s"):format(Snacks.meta.root, name, child:gsub("%.", "/"))
         for _, f in ipairs({ ".lua", "/init.lua" }) do
           if vim.uv.fs_stat(child_file .. f) then

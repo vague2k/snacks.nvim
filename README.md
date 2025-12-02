@@ -15,11 +15,13 @@ A collection of small QoL plugins for Neovim.
 | [debug](https://github.com/folke/snacks.nvim/blob/main/docs/debug.md) | Pretty inspect & backtraces for debugging |  |
 | [dim](https://github.com/folke/snacks.nvim/blob/main/docs/dim.md) | Focus on the active scope by dimming the rest |  |
 | [explorer](https://github.com/folke/snacks.nvim/blob/main/docs/explorer.md) | A file explorer (picker in disguise) | ‼️ |
+| [gh](https://github.com/folke/snacks.nvim/blob/main/docs/gh.md) | GitHub CLI integration |  |
 | [git](https://github.com/folke/snacks.nvim/blob/main/docs/git.md) | Git utilities |  |
 | [gitbrowse](https://github.com/folke/snacks.nvim/blob/main/docs/gitbrowse.md) | Open the current file, branch, commit, or repo in a browser (e.g. GitHub, GitLab, Bitbucket) |  |
 | [image](https://github.com/folke/snacks.nvim/blob/main/docs/image.md) | Image viewer using Kitty Graphics Protocol, supported by `kitty`, `wezterm` and `ghostty` | ‼️ |
 | [indent](https://github.com/folke/snacks.nvim/blob/main/docs/indent.md) | Indent guides and scopes |  |
 | [input](https://github.com/folke/snacks.nvim/blob/main/docs/input.md) | Better `vim.ui.input` | ‼️ |
+| [keymap](https://github.com/folke/snacks.nvim/blob/main/docs/keymap.md) | Better `vim.keymap` with support for filetypes and LSP clients |  |
 | [layout](https://github.com/folke/snacks.nvim/blob/main/docs/layout.md) | Window layouts |  |
 | [lazygit](https://github.com/folke/snacks.nvim/blob/main/docs/lazygit.md) | Open LazyGit in a float, auto-configure colorscheme and integration with Neovim |  |
 | [notifier](https://github.com/folke/snacks.nvim/blob/main/docs/notifier.md) | Pretty `vim.notify` | ‼️ |
@@ -27,7 +29,7 @@ A collection of small QoL plugins for Neovim.
 | [picker](https://github.com/folke/snacks.nvim/blob/main/docs/picker.md) | Picker for selecting items | ‼️ |
 | [profiler](https://github.com/folke/snacks.nvim/blob/main/docs/profiler.md) | Neovim lua profiler |  |
 | [quickfile](https://github.com/folke/snacks.nvim/blob/main/docs/quickfile.md) | When doing `nvim somefile.txt`, it will render the file as quickly as possible, before loading your plugins. | ‼️ |
-| [rename](https://github.com/folke/snacks.nvim/blob/main/docs/rename.md) | LSP-integrated file renaming with support for plugins like [neo-tree.nvim](https://github.com/nvim-neo-tree/neo-tree.nvim) and [mini.files](https://github.com/echasnovski/mini.files). |  |
+| [rename](https://github.com/folke/snacks.nvim/blob/main/docs/rename.md) | LSP-integrated file renaming with support for plugins like [neo-tree.nvim](https://github.com/nvim-neo-tree/neo-tree.nvim) and [mini.files](https://github.com/nvim-mini/mini.files). |  |
 | [scope](https://github.com/folke/snacks.nvim/blob/main/docs/scope.md) | Scope detection, text objects and jumping based on treesitter or indent | ‼️ |
 | [scratch](https://github.com/folke/snacks.nvim/blob/main/docs/scratch.md) | Scratch buffers with a persistent file |  |
 | [scroll](https://github.com/folke/snacks.nvim/blob/main/docs/scroll.md) | Smooth scrolling | ‼️ |
@@ -45,7 +47,7 @@ A collection of small QoL plugins for Neovim.
 
 - **Neovim** >= 0.9.4
 - for proper icons support:
-  - [mini.icons](https://github.com/echasnovski/mini.icons) _(optional)_
+  - [mini.icons](https://github.com/nvim-mini/mini.icons) _(optional)_
   - [nvim-web-devicons](https://github.com/nvim-tree/nvim-web-devicons) _(optional)_
   - a [Nerd Font](https://www.nerdfonts.com/) **_(optional)_**
 
@@ -109,6 +111,7 @@ Please refer to the readme of each plugin for their specific configuration.
 ---@field dashboard? snacks.dashboard.Config
 ---@field dim? snacks.dim.Config
 ---@field explorer? snacks.explorer.Config
+---@field gh? snacks.gh.Config
 ---@field gitbrowse? snacks.gitbrowse.Config
 ---@field image? snacks.image.Config
 ---@field indent? snacks.indent.Config
@@ -149,6 +152,7 @@ Please refer to the readme of each plugin for their specific configuration.
       "mkv",
       "webm",
       "pdf",
+      "icns",
     },
   },
 }
@@ -237,6 +241,11 @@ See the example below for how to configure `snacks.nvim`.
     { "<leader>gS", function() Snacks.picker.git_stash() end, desc = "Git Stash" },
     { "<leader>gd", function() Snacks.picker.git_diff() end, desc = "Git Diff (Hunks)" },
     { "<leader>gf", function() Snacks.picker.git_log_file() end, desc = "Git Log File" },
+    -- gh
+    { "<leader>gi", function() Snacks.picker.gh_issue() end, desc = "GitHub Issues (open)" },
+    { "<leader>gI", function() Snacks.picker.gh_issue({ state = "all" }) end, desc = "GitHub Issues (all)" },
+    { "<leader>gp", function() Snacks.picker.gh_pr() end, desc = "GitHub Pull Requests (open)" },
+    { "<leader>gP", function() Snacks.picker.gh_pr({ state = "all" }) end, desc = "GitHub Pull Requests (all)" },
     -- Grep
     { "<leader>sb", function() Snacks.picker.lines() end, desc = "Buffer Lines" },
     { "<leader>sB", function() Snacks.picker.grep_buffers() end, desc = "Grep Open Buffers" },
@@ -270,6 +279,8 @@ See the example below for how to configure `snacks.nvim`.
     { "gr", function() Snacks.picker.lsp_references() end, nowait = true, desc = "References" },
     { "gI", function() Snacks.picker.lsp_implementations() end, desc = "Goto Implementation" },
     { "gy", function() Snacks.picker.lsp_type_definitions() end, desc = "Goto T[y]pe Definition" },
+    { "gai", function() Snacks.picker.lsp_incoming_calls() end, desc = "C[a]lls Incoming" },
+    { "gao", function() Snacks.picker.lsp_outgoing_calls() end, desc = "C[a]lls Outgoing" },
     { "<leader>ss", function() Snacks.picker.lsp_symbols() end, desc = "LSP Symbols" },
     { "<leader>sS", function() Snacks.picker.lsp_workspace_symbols() end, desc = "LSP Workspace Symbols" },
     -- Other
@@ -317,7 +328,15 @@ See the example below for how to configure `snacks.nvim`.
         _G.bt = function()
           Snacks.debug.backtrace()
         end
-        vim.print = _G.dd -- Override print to use snacks for `:=` command
+
+        -- Override print to use snacks for `:=` command
+        if vim.fn.has("nvim-0.11") == 1 then
+          vim._print = function(_, ...)
+            dd(...)
+          end
+        else
+          vim.print = _G.dd 
+        end
 
         -- Create some toggle mappings
         Snacks.toggle.option("spell", { name = "Spelling" }):map("<leader>us")
